@@ -2,7 +2,7 @@
 
 ```
 git clone https://github.com/AlgorithmHub/finishline.git
-cd finishline
+cd finishline/example
 pip3 install dash dash-responsive-grid-layout
 python3 server.py
 ```
@@ -10,7 +10,7 @@ python3 server.py
 To create a new viz block:
 
 ```
-cd finishline
+cd finishline/example
 cp -r plugins/HelloWorld plugins/MyNewBlock
 vi plugins/MyNewBlock
 ```
