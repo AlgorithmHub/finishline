@@ -3,6 +3,7 @@
 ```
 git clone https://github.com/AlgorithmHub/finishline.git
 cd finishline
+pip3 install dash dash-responsive-grid-layout
 python3 server.py
 ```
 
@@ -18,5 +19,6 @@ State of project is proof of concept.
 
 Things to do:
 
-* Create dynamic layout system
+* Save layout to file
+* Finish reusable components API
 * ...
