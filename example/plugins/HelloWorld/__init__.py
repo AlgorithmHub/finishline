@@ -1,8 +1,8 @@
 import dash_html_components as html
 import dash_core_components as dcc
 
-def layout(app, data, fl):
-    
+def initialize(app, data, fl):
+
     fl.register_vis('HelloWorld',
         dcc.Graph(
             id='basic-chart',

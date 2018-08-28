@@ -15,10 +15,19 @@ cp -r plugins/HelloWorld plugins/MyNewBlock
 vi plugins/MyNewBlock
 ```
 
-State of project is proof of concept.
+Features:
+
+* Component plugin interface
+* Data store API
+* Visualiztion API
+* Responsive grid layout compatible with plotly
+* Dynaimc grid layout
 
 Things to do:
 
-* Save layout to file
+* Save layout
 * Finish reusable components API
+* Allow layout to add missing components
+* Hide/Show components
+* Multiple page layout
 * ...

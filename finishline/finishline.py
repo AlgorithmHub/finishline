@@ -22,10 +22,12 @@ class FinishLine(object):
             self, 
             app=None,
             data=None,
-            show_data=True,
-            on_layout_change=None):
+            name='default',
+            show_data=False,
+            on_layout_change=None,
+            debug_path=None):
 
-        self.name = 'default'
+        self.name = name
         
         # server side
         self.app = app or dash.Dash()
@@ -40,6 +42,12 @@ class FinishLine(object):
         # misc
         self.extra_files = []
         self.show_data = show_data
+        self.debug_path = debug_path
+        
+        #private
+        self._curr_file = None
+        
+        
         
         # callbacks
         self.on_layout_change = on_layout_change or (lambda lo: print('layout', lo)) 
@@ -47,12 +55,18 @@ class FinishLine(object):
         
     def register_vis(self, name, layout):
                 
-        self.client_vis[name] = layout
+        self.client_vis[name] = {
+            'layout': layout,
+            'src_file': self._curr_file
+        }
         
 
     def register_data(self, name, data=None, callback=None):
         
-        self.client_data[name] = data or {}
+        self.client_data[name] = {
+            'data': data or {},
+            'src_file': self._curr_file
+        }
         
         if callback:
             @self.app.callback(Output(name, 'role'),
@@ -62,7 +76,7 @@ class FinishLine(object):
                 raise PreventUpdate()
                 
         
-    def generate_layout(self, components=gc, layouts={}):
+    def generate_layout(self, components=gc, layouts=None, cols=None):
         
         page_id = self.name + '-fl-page'
         
@@ -81,23 +95,36 @@ class FinishLine(object):
                 
         # client side data objects
         c_data_style = {'display':'block'} if self.show_data else {'display':'none'}
-        c_data = [html.Div(json.dumps(v), id=k) for k,v in self.client_data.items()]
+
+        if self.debug_path is not None:
+            c_data = [html.A([k+':',html.Div(json.dumps(v['data']), id=k)], href=v['src_file'], target=k) for k,v in self.client_data.items()]
+        else:
+            c_data = [html.Div(json.dumps(v), id=k) for k,v in self.client_data.items()]
+        
                 
         # client side visualization objects
         c_vis = self._gen_c_vis(components, layouts)
 
-        self.finalize()
+        # run plugin finialize method, e.g. should be used to create callbacks
+        self._finalize()
+        
         return components.Page(
-            [components.Layout(c_vis, id=page_layout, layouts=layouts),
+            [components.Layout(c_vis, id=page_layout, layouts=layouts, cols=cols),
              html.Div(c_data, className='fl-data', id=page_data, style=c_data_style)],
             id=page_id)
     
     
     def _gen_c_vis(self, components, layouts):
-        
-        ks,vs = zip(*self.client_vis.items())
-        # TODO not obvious that 'lg' needs to be defined and i needs to be an index
-        return [components.Card(vs[int(ci['i'])], title=ks[int(ci['i'])], i=ci['i']) for ci in layouts['lg']]
+        i = 0
+        c = []
+        ii = [l['i'] for l in layouts['lg']] if (layouts and 'lg' in layouts) else []
+        for (name, vis) in self.client_vis.items():
+            key = str(i) if str(i) in ii else name
+            key = name if name in ii else key
+            c.append(components.Card(vis['layout'], title=name, i=key, href=vis['src_file']))
+            i = i + 1
+            
+        return c
                 
     
     def load_plugins(self, plugins_path='plugins/*'):
@@ -109,6 +136,10 @@ class FinishLine(object):
             fname = m + '/__init__.py'
             if not os.path.isfile(fname):
                 continue
+            
+            if self.debug_path is not None:
+                self._curr_file = os.path.abspath(fname).replace(self.debug_path['root'], self.debug_path['target'])
+            
             self.extra_files.append(fname) #TODO walk all py files in dir
             spec = importlib.util.spec_from_file_location(m, fname)
             print(spec)
@@ -116,7 +147,7 @@ class FinishLine(object):
             
             try:
                 spec.loader.exec_module(plugin)
-                plugin.layout(self.app, self.data, self)
+                plugin.initialize(self.app, self.data, self)
             except:
                 traceback.print_exc()
                 print("Unexpected error in plugin, ", m, ": ", sys.exc_info()[0])
@@ -125,7 +156,7 @@ class FinishLine(object):
             self.plugins[m] = plugin
              
                 
-    def finalize(self):
+    def _finalize(self):
         for plugin in self.plugins.values():
             if 'finalize' in plugin.__dict__:
                 plugin.finalize(self.app, self.data, self)

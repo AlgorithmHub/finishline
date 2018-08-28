@@ -1,16 +1,19 @@
 import dash_html_components as html
-from blocks.example_blocks import OutputForm
+from dash.dependencies import Input, Output, State
+
+def initialize(app, data, fl):
     
-def layout(app, data, fl):
-    output_form = OutputForm(app, data)
-    
-    fl.register_vis('OutputForm', output_form.layout)
-    fl.blocks.register('OutputForm', output_form)
-    
+    fl.register_vis('OutputForm', html.Div(id='output-state'))
+
 def finalize(app, data, fl):
-    output_form = fl.blocks['OutputForm']
-    output_form.resolve({
-        'n_clicks': fl.blocks['InputForm']['submit-button']['n_clicks'],
-        'input1': fl.blocks['InputForm']['input-1-state']['value'],
-        'input2': fl.blocks['InputForm']['input-2-state']['value'],
-    })
+
+    @app.callback(Output('output-state', 'children'),
+                  [Input('submit-button', 'n_clicks')],
+                  [State('input-1-state', 'value'),
+                   State('input-2-state', 'value')])
+    def update_output(n_clicks, input1, input2):
+        return u'''
+            The Button has been pressed {} times,
+            Input 1 is "{}",
+            and Input 2 is "{}"
+        '''.format(n_clicks, input1, input2)

@@ -20,7 +20,7 @@ def Page(children=None, **kwargs):
     )
 
 
-def Layout(children=None, layouts=None, **kwargs):    
+def Layout(children=None, layouts=None, cols=None, rowHeight=300, **kwargs):    
     return html.Div(
         children,
         className="row",
@@ -31,19 +31,14 @@ def Layout(children=None, layouts=None, **kwargs):
     )
 
 
-def Card(children, title='Undefined', i=0, width=6, **kwargs):
+def Card(children, title='Undefined', i=0, href=None, width=6, **kwargs):
 
-    number_mapping = {
-        1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6',
-        7: '7', 8: '8', 9: '9', 10: '10', 11: '11',
-        12: '12'
-    }
-    
-    c = [html.Div(title, className='fl-titlebar'), html.Div(children, style={'padding': 20 })]
+    t = html.A(title, href=href, target=title) if href is not None else title
+    c = [html.Div(t, className='fl-titlebar'), html.Div(children, style={'padding': 20 })]
 
     return html.Div(
         c,
-        className='fl-card col-sm-{}'.format(number_mapping[width]),
+        className='fl-card col-sm-{}'.format(str(width)),
         style=merge({
             'padding': 20,
             'margin': 0,
