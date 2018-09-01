@@ -1,10 +1,14 @@
+from dash.dependencies import Output, Input, State
 import dash_html_components as html
 import dash_core_components as dcc
-
-def layout(app, data, fl):
+import dash_building_blocks as dbb
+import json
     
-    fl.register_vis('HelloWorld',
-        dcc.Graph(
+    
+class HelloWorld(dbb.Block):
+    
+    def layout(self):
+        return dcc.Graph(
             id='basic-chart',
             figure={
                 'data': [
@@ -32,7 +36,13 @@ def layout(app, data, fl):
                 'autosizable': True
                 }
             )
-    )
+            
+
+def initialize(app, data, fl):
+    
+    hello_world = HelloWorld(app, data)
+    fl.register_vis('HelloWorld', hello_world.layout)
+    
 
 def finalize(app, data, fl):
     pass

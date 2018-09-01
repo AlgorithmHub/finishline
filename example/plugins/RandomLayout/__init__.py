@@ -5,7 +5,7 @@ import random
 import json
 from dash.exceptions import PreventUpdate
 
-def layout(app, data, fl):
+def initialize(app, data, fl):
     
     @app.callback(
         Output('default-fl-page-layout', 'layouts'), 

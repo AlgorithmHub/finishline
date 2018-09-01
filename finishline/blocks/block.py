@@ -4,10 +4,6 @@ import dash_html_components as html
 import dash_table_experiments as dt
 import plotly.graph_objs as go
 
-# import json
-# import os
-
-import blocks.plotly_components as pc
 
 SAMPLE_FIGURE = {
     'data': [{
@@ -64,6 +60,9 @@ class Component:
     def __init__(self, id):
         self.id = id
         
+    def output(self, key):
+        return Output(self.id, key)
+    
     def input(self, key):
         return Input(self.id, key)
     
@@ -76,7 +75,8 @@ class Component:
     
 class Block:
 
-    def __init__(self, app=None, data=None, id=''):
+    def __init__(self, app=None, data=None, id='', **kwargs):
+        self.parameters(**kwargs)
         self.app = app
         self.data = Data(data)
         self.base_id = self.block_id()
@@ -85,11 +85,17 @@ class Block:
         self._callbacks = self._set_callbacks()
         self._dependencies = self._set_deps(self._callbacks)
         
+    def parameters(self, **kwargs):
+        pass
+        
     def block_id(self):
         return _decamelify(self.__class__.__name__)
 
     def layout(self):
         raise NotImplementedError
+        
+    def callbacks(self):
+        pass
     
     def _set_callbacks(self):
         _callbacks = {}
@@ -177,33 +183,25 @@ class Block:
     def __getitem__(self, key):
         return Component(self.ids[key])
     
+    def __call__(self, component_id, property_id=None):
+        
+        if component_id not in self.ids:
+            self.register(component_id)
+            
+        if property_id is None:
+            return self.ids[component_id]
+        else:
+            return self[component_id][property_id]
+    
+    def output(self, component_id, component_property):
+        return self[component_id].output(component_property)
+    
     def input(self, component_id, component_property):
         return self[component_id].input(component_property)
     
     def state(self, component_id, component_property):
         return self[component_id].state(component_property)
 
-
-class Handler(Block):
-
-    def layout(self):
-        return html.Div(id=self.register('data'), 
-                        style={'display': 'none'})
-    
-class Medium(Block):
-
-    def layout(self):
-        return html.Div(id=self.register('data'), 
-                        style={'display': 'none'})
-
-# class BasicBlock(Block):
-    
-#     def layout(self):
-#         return html.Div('I am a simple block',
-#                         id=self.register('div'))
-#     @Block.require(['text_data'])
-#     def callback_div_children(text):
-#         return text
 
 
 

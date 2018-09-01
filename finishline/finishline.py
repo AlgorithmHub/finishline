@@ -32,6 +32,7 @@ class FinishLine(object):
         self.data = data or {}
         self.plugins = {}
         self.blocks = BlockManager()
+        self.datablock = DataBlock(app)
         
         # client side
         self.client_vis  = {}
@@ -61,6 +62,19 @@ class FinishLine(object):
                 callback(json.loads(new_data))
                 raise PreventUpdate()
                 
+                
+    def register_block(self, name, block):
+        
+        self.blocks.register(name, block)
+        self.register_vis(name, block.layout)
+        for attr in block.__class__.__dict__:
+            i0 = attr.find('data_')
+            if i0 == 0:
+                print('>', attr)
+                _attr = attr[i0+len('_data'):]
+                self.blocks.register_data(block.ids[_attr], 
+                                          getattr(block, 'data_{}'.format(_attr))())
+                
         
     def generate_layout(self, components=gc, layouts={}):
         
@@ -82,15 +96,18 @@ class FinishLine(object):
         # client side data objects
         c_data_style = {'display':'block'} if self.show_data else {'display':'none'}
         c_data = [html.Div(json.dumps(v), id=k) for k,v in self.client_data.items()]
+        c_data += self.datablock.divs
                 
         # client side visualization objects
         c_vis = self._gen_c_vis(components, layouts)
-
-        self.finalize()
-        return components.Page(
+        layout = components.Page(
             [components.Layout(c_vis, id=page_layout, layouts=layouts),
              html.Div(c_data, className='fl-data', id=page_data, style=c_data_style)],
             id=page_id)
+
+        self.finalize()
+        
+        return layout
     
     
     def _gen_c_vis(self, components, layouts):
@@ -136,13 +153,47 @@ class FinishLine(object):
                    debug=False,
                    **flask_run_options):
         self.app.run_server(port=port, debug=debug, extra_files=self.extra_files, **flask_run_options)
-                
-                
+
+        
+class DataBlock:
+    
+    def __init__(self, app):
+        self.app = app
+        self.divs = []
+
+    def add(self, key, input, state=None, default=''):
+        state = state or []
+        self.divs.append(html.Div([html.Div('{}: '.format(key),
+                                            style={'fontWeight': 'bold'}), 
+                                   html.Div(default, id=key)]))
+        def deco(cbfunc):
+            self.app.callback(
+                self.output(key), input, state
+            )(cbfunc)
+        return deco
+    
+    def get(self, key):
+        return key, 'children'
+    
+    def __getitem__(self, key):
+        return self.get(key)
+    
+    def output(self, key):
+        return Output(*self.get(key))
+    
+    def input(self, key):
+        return Input(*self.get(key))
+    
+    def state(self, key):
+        return state(*self.get(key))
+    
+    
 class BlockManager:
     
     def __init__(self):
         
         self._blocks = {}
+        self.client_data = {}
         
         
     def register(self, name, block):
