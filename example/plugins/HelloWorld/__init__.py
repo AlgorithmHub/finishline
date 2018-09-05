@@ -1,6 +1,7 @@
 from dash.dependencies import Output, Input, State
 import dash_html_components as html
 import dash_core_components as dcc
+<<<<<<< HEAD
 import dash_building_blocks as dbb
 import json
     
@@ -9,6 +10,13 @@ class HelloWorld(dbb.Block):
     
     def layout(self):
         return dcc.Graph(
+=======
+
+def initialize(app, data, fl):
+
+    fl.register_vis('HelloWorld',
+        dcc.Graph(
+>>>>>>> master
             id='basic-chart',
             figure={
                 'data': [

@@ -1,4 +1,3 @@
-import dash_html_components as html
 import importlib.util
 import glob
 import os.path
@@ -7,9 +6,10 @@ import traceback
 
 import finishline.grid_components as gc
 
+from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+import dash_building_blocks as dbb
 import random
 import json
 from dash.exceptions import PreventUpdate
@@ -22,17 +22,19 @@ class FinishLine(object):
             self, 
             app=None,
             data=None,
-            show_data=True,
-            on_layout_change=None):
+            name='default',
+            debug=False,
+            on_layout_change=None,
+            debug_path=None):
 
-        self.name = 'default'
+        self.name = name
         
         # server side
         self.app = app or dash.Dash()
         self.data = data or {}
         self.plugins = {}
         self.blocks = BlockManager()
-        self.datablock = DataBlock(app)
+        self.store = FinishStore(app, hide=(not debug))
         
         # client side
         self.client_vis  = {}
@@ -40,7 +42,13 @@ class FinishLine(object):
         
         # misc
         self.extra_files = []
-        self.show_data = show_data
+        self.debug = debug
+        self.debug_path = debug_path
+        
+        #private
+        self._curr_file = None
+        
+        
         
         # callbacks
         self.on_layout_change = on_layout_change or (lambda lo: print('layout', lo)) 
@@ -48,35 +56,34 @@ class FinishLine(object):
         
     def register_vis(self, name, layout):
                 
-        self.client_vis[name] = layout
+        self.client_vis[name] = {
+            'layout': layout,
+            'src_file': self._curr_file
+        }
         
 
-    def register_data(self, name, data=None, callback=None):
+    def register_data(self, name, input=None, state=None, data=None, on_update=None):
         
-        self.client_data[name] = data or {}
+        self.client_data[name] = {
+            'data': data or {},
+            'src_file': self._curr_file
+        }
+                
+        ret = self.store.register(name, input=input, state=state, initially=data)
         
-        if callback:
-            @self.app.callback(Output(name, 'role'),
-                              [Input(name, 'children')])
+        if on_update:
+            @self.app.callback(
+                Output(self.store.ids[name], 'role'),
+                [self.store.input(name)]
+            )
             def data_callback(new_data):
-                callback(json.loads(new_data))
+                on_update(json.loads(new_data))
                 raise PreventUpdate()
-                
-                
-    def register_block(self, name, block):
         
-        self.blocks.register(name, block)
-        self.register_vis(name, block.layout)
-        for attr in block.__class__.__dict__:
-            i0 = attr.find('data_')
-            if i0 == 0:
-                print('>', attr)
-                _attr = attr[i0+len('_data'):]
-                self.blocks.register_data(block.ids[_attr], 
-                                          getattr(block, 'data_{}'.format(_attr))())
+        return ret
                 
         
-    def generate_layout(self, components=gc, layouts={}):
+    def generate_layout(self, components=gc, layouts=None, cols=None):
         
         page_id = self.name + '-fl-page'
         
@@ -84,37 +91,47 @@ class FinishLine(object):
         page_config = page_id + '-config'
         page_data   = page_id + '-data'
         
-        # register page configuration
-        self.register_data(page_config, layouts, self.on_layout_change)
-        
-        # push fl-page-config to data
-        @self.app.callback(Output(page_config, 'children'),
-                          [Input(page_layout, 'layouts')])
+        @self.register_data(
+            page_config, 
+            input=[Input(page_layout, 'layouts')],
+            data=layouts,
+            on_update=self.on_layout_change
+        )
         def get_layout(new_config):
             return json.dumps(new_config)
                 
         # client side data objects
-        c_data_style = {'display':'block'} if self.show_data else {'display':'none'}
-        c_data = [html.Div(json.dumps(v), id=k) for k,v in self.client_data.items()]
-        c_data += self.datablock.divs
+        c_data_style = {'display':'block'} if self.debug else {'display':'none'}
+        
+        if self.debug_path is not None:
+            c_data = self.store.debug_layout(self.client_data)
+        else:
+            c_data = self.store.layout
                 
         # client side visualization objects
         c_vis = self._gen_c_vis(components, layouts)
         layout = components.Page(
-            [components.Layout(c_vis, id=page_layout, layouts=layouts),
+            [components.Layout(c_vis, id=page_layout, layouts=layouts, cols=cols), 
              html.Div(c_data, className='fl-data', id=page_data, style=c_data_style)],
             id=page_id)
 
-        self.finalize()
+        # run plugin finalize method, e.g. should be used to create callbacks
+        self._finalize()
         
         return layout
     
     
     def _gen_c_vis(self, components, layouts):
-        
-        ks,vs = zip(*self.client_vis.items())
-        # TODO not obvious that 'lg' needs to be defined and i needs to be an index
-        return [components.Card(vs[int(ci['i'])], title=ks[int(ci['i'])], i=ci['i']) for ci in layouts['lg']]
+        i = 0
+        c = []
+        ii = [l['i'] for l in layouts['lg']] if (layouts and 'lg' in layouts) else []
+        for (name, vis) in self.client_vis.items():
+            key = str(i) if str(i) in ii else name
+            key = name if name in ii else key
+            c.append(components.Card(vis['layout'], title=name, i=key, href=vis['src_file']))
+            i = i + 1
+            
+        return c
                 
     
     def load_plugins(self, plugins_path='plugins/*'):
@@ -126,6 +143,10 @@ class FinishLine(object):
             fname = m + '/__init__.py'
             if not os.path.isfile(fname):
                 continue
+            
+            if self.debug_path is not None:
+                self._curr_file = os.path.abspath(fname).replace(self.debug_path['root'], self.debug_path['target'])
+            
             self.extra_files.append(fname) #TODO walk all py files in dir
             spec = importlib.util.spec_from_file_location(m, fname)
             print(spec)
@@ -133,7 +154,7 @@ class FinishLine(object):
             
             try:
                 spec.loader.exec_module(plugin)
-                plugin.layout(self.app, self.data, self)
+                plugin.initialize(self.app, self.data, self)
             except:
                 traceback.print_exc()
                 print("Unexpected error in plugin, ", m, ": ", sys.exc_info()[0])
@@ -142,7 +163,7 @@ class FinishLine(object):
             self.plugins[m] = plugin
              
                 
-    def finalize(self):
+    def _finalize(self):
         for plugin in self.plugins.values():
             if 'finalize' in plugin.__dict__:
                 plugin.finalize(self.app, self.data, self)
@@ -154,46 +175,25 @@ class FinishLine(object):
                    **flask_run_options):
         self.app.run_server(port=port, debug=debug, extra_files=self.extra_files, **flask_run_options)
 
-        
-class DataBlock:
-    
-    def __init__(self, app):
-        self.app = app
-        self.divs = []
 
-    def add(self, key, input, state=None, default=''):
-        state = state or []
-        self.divs.append(html.Div([html.Div('{}: '.format(key),
-                                            style={'fontWeight': 'bold'}), 
-                                   html.Div(default, id=key)]))
-        def deco(cbfunc):
-            self.app.callback(
-                self.output(key), input, state
-            )(cbfunc)
-        return deco
+class FinishStore(dbb.Store):
     
-    def get(self, key):
-        return key, 'children'
-    
-    def __getitem__(self, key):
-        return self.get(key)
-    
-    def output(self, key):
-        return Output(*self.get(key))
-    
-    def input(self, key):
-        return Input(*self.get(key))
-    
-    def state(self, key):
-        return state(*self.get(key))
-    
+    def debug_layout(self, client_data):
+        style = {'display': 'none'} if self.hide else None
+        return html.Div([
+            html.A(children=[k+':', html.Div(json.dumps(v['data']), 
+                                                  id=self.ids[k])], 
+                   href=v['src_file'], 
+                   target=k) 
+            for k, v in client_data.items()
+        ])
+        
     
 class BlockManager:
     
     def __init__(self):
         
         self._blocks = {}
-        self.client_data = {}
         
         
     def register(self, name, block):
