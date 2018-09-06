@@ -1,5 +1,5 @@
-import sys
-sys.path.append('..')
+# import sys
+# sys.path.append('..')
 
 import dash
 from finishline import FinishLine
@@ -10,7 +10,10 @@ app.scripts.config.serve_locally = True
 
 data = { 'state': 'Montréal', 'country': "Canada" }
 
-fl = FinishLine(app=app, data=data, show_data=True, debug_path={'root':'/workspace/', 'target':'/jupyter/edit/'})
+fl = FinishLine(app=app, 
+                data=data, 
+                debug=True, 
+                debug_path={'root':'/workspace/', 'target':'/jupyter/edit/'})
 fl.load_plugins()
 app.layout = fl.generate_layout(layouts={
     'lg':[

@@ -5,12 +5,8 @@ import random
 import json
 from dash.exceptions import PreventUpdate
 
-def initialize(app, data, fl):
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> master
+def initialize(app, data, fl):
     @app.callback(
         Output('default-fl-page-layout', 'layouts'),
         [Input('fun-button', 'n_clicks')],

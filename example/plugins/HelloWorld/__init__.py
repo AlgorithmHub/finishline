@@ -1,22 +1,12 @@
 from dash.dependencies import Output, Input, State
 import dash_html_components as html
 import dash_core_components as dcc
-<<<<<<< HEAD
-import dash_building_blocks as dbb
-import json
     
-    
-class HelloWorld(dbb.Block):
-    
-    def layout(self):
-        return dcc.Graph(
-=======
 
 def initialize(app, data, fl):
 
     fl.register_vis('HelloWorld',
         dcc.Graph(
->>>>>>> master
             id='basic-chart',
             figure={
                 'data': [
@@ -28,7 +18,7 @@ def initialize(app, data, fl):
                         'name': 'Trace 1',
                         'mode': 'markers',
                         'marker': {'size': 12}
-                        },
+                    },
                     {
                         'x': [1, 2, 3, 4],
                         'y': [9, 4, 1, 4],
@@ -37,19 +27,14 @@ def initialize(app, data, fl):
                         'name': 'Trace 2',
                         'mode': 'markers',
                         'marker': {'size': 12}
-                        }
-                    ]
-                },
+                    }
+                ]
+            },
             config={
                 'autosizable': True
-                }
-            )
-            
-
-def initialize(app, data, fl):
-    
-    hello_world = HelloWorld(app, data)
-    fl.register_vis('HelloWorld', hello_world.layout)
+            }
+        )
+    )         
     
 
 def finalize(app, data, fl):
