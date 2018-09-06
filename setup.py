@@ -6,7 +6,7 @@ def readme():
 
 configuration = {
     'name' : 'finishline',
-    'version': '0.0.1',
+    'version': '0.0.2',
     'description' : 'Framework for Building Beautiful and Functional Dashbords',
     'long_description' : readme(),
     'classifiers' : [
@@ -30,7 +30,8 @@ configuration = {
     'license' : 'MIT',
     'packages' : ['finishline'],
     'install_requires': ['dash >= 0.22.0',
-                         'dash-responsive-grid-layout >= 0.0.1'],
+                         'dash-responsive-grid-layout >= 0.0.1',
+                         'dash-building-blocks >= 0.0.2'],
     'ext_modules' : [],
     'cmdclass' : {},
     'test_suite' : '',
