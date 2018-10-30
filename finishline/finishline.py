@@ -62,14 +62,14 @@ class FinishLine(object):
         }
         
 
-    def register_data(self, name, input=None, state=None, data=None, on_update=None):
+    def register_data(self, name, inputs=None, state=None, data=None, on_update=None):
         
         self.client_data[name] = {
             'data': data or {},
             'src_file': self._curr_file
         }
                 
-        ret = self.store.register(name, input=input, state=state, initially=data)
+        ret = self.store.register(name, inputs=inputs, state=state, initially=data)
         
         if on_update:
             @self.app.callback(
@@ -93,7 +93,7 @@ class FinishLine(object):
         
         @self.register_data(
             page_config, 
-            input=[Input(page_layout, 'layouts')],
+            inputs=[Input(page_layout, 'layouts')],
             data=layouts,
             on_update=self.on_layout_change
         )
@@ -139,7 +139,7 @@ class FinishLine(object):
         modules = sorted(glob.glob(plugins_path))
 
         for m in modules:
-            print(m)
+#             print(m)
             fname = m + '/__init__.py'
             if not os.path.isfile(fname):
                 continue
@@ -149,7 +149,7 @@ class FinishLine(object):
             
             self.extra_files.append(fname) #TODO walk all py files in dir
             spec = importlib.util.spec_from_file_location(m, fname)
-            print(spec)
+#             print(spec)
             plugin = importlib.util.module_from_spec(spec)
             
             try:
@@ -158,7 +158,8 @@ class FinishLine(object):
             except:
                 traceback.print_exc()
                 print("Unexpected error in plugin, ", m, ": ", sys.exc_info()[0])
-                self.register_vis(m, html.Pre("Unexpected error in " + m + '\n' + traceback.format_exc()));
+                self.register_vis(m, html.Pre("Unexpected error in " + m + '\n' + traceback.format_exc()))
+                # TODO: register 'XXX' instead of 'plugin/XXX'
                 
             self.plugins[m] = plugin
              
@@ -202,5 +203,10 @@ class BlockManager:
         
         
     def __getitem__(self, name):
-        print(self._blocks.keys())
+        
+        return self._blocks[name]
+        
+        
+    def __getattr__(self, name):
+        
         return self._blocks[name]
