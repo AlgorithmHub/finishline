@@ -182,10 +182,7 @@ class FinishStore(dbb.Store):
     def debug_layout(self, client_data):
         style = {'display': 'none'} if self.hide else None
         return html.Div([
-            html.A(children=[k+':', html.Div(json.dumps(v['data']), 
-                                                  id=self.ids[k])], 
-                   href=v['src_file'], 
-                   target=k) 
+            html.Div([html.A(children=[k+':'],href=v['src_file'],target=k), html.Div(json.dumps(v['data']), id=self.ids[k])])
             for k, v in client_data.items()
         ])
         
