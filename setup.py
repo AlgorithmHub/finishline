@@ -6,7 +6,7 @@ def readme():
 
 configuration = {
     'name' : 'finishline',
-    'version': '0.0.3',
+    'version': '0.0.4',
     'description' : 'Framework for Building Beautiful and Functional Dashbords',
     'long_description' : readme(),
     'classifiers' : [
