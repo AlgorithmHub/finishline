@@ -7,6 +7,7 @@ from finishline import FinishLine
 app = dash.Dash()
 app.config.supress_callback_exceptions = True
 app.scripts.config.serve_locally = True
+app.title = 'Dash FinishLine'
 
 data = { 'state': 'Montréal', 'country': "Canada" }
 
