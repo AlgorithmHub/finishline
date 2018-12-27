@@ -97,6 +97,40 @@ Requirements:
     pip3 install finishline
 
 
+------------
+Build
+------------
+
+**Create distribution**
+
+* edit setup.py and change version number
+
+.. code:: bash
+
+    python3 setup.py sdist bdist_wheel
+
+**Install distribution locally**
+
+.. code:: bash
+
+    pip3 uninstall finishline
+    pip3 install dist/finishline-VERSION-py3-none-any.whl
+
+**Push to test pip**
+
+.. code:: bash
+
+    twine upload --repository-url https://test.pypi.org/legacy/ dist/*VERSION*
+    pip3 install -U --index-url https://test.pypi.org/simple/ finishline
+
+**Push to production pip**
+
+.. code:: bash
+
+    twine upload dist/*VERSION*
+    pip3 install -U finishline
+
+
 --------
 Features
 --------
