@@ -22,7 +22,7 @@ def Page(children=None, **kwargs):
     )
 
 
-def Layout(children=None, layouts=None, cols=None, rowHeight=300, **kwargs):\
+def Layout(children=None, layouts=None, cols=None, rowHeight=300, **kwargs):
     
     layouts = layouts or {'lg':[], 'md':[], 'sm':[] }
     cols = cols or { 'lg': 3, 'md': 2, 'sm': 1 };
@@ -33,16 +33,21 @@ def Layout(children=None, layouts=None, cols=None, rowHeight=300, **kwargs):\
         cols=cols,
         rowHeight=rowHeight,
         draggableHandle='.fl-titlebar',
+        verticalCompact=True,
         **kwargs
     )
 
 
 def Card(children, title='Undefined', i=0, href=None, **kwargs):
     
-    # note: don't put children in a div container wrapper, else plotly won't resize properly
-    #c = [html.Div(title, className='fl-titlebar'), html.Div(children, className='fl-content')]
     t = html.A(title, href=href, target=title) if href is not None else title
-    c = [html.Div(t, className='fl-titlebar')] + [children]
+    print('card children', children)
+    if isinstance(children, dcc.Graph):
+        # note: don't put children in a div container wrapper, else plotly won't resize properly
+        c = [html.Div(t, className='fl-titlebar')] + [children]
+    else:
+        c = [html.Div(t, className='fl-titlebar'), html.Div(children, className='fl-content')]
+        
 
     return html.Div(
         c,
