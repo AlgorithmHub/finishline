@@ -53,8 +53,15 @@ body {
   border: 1px solid #acacac;
   border-radius: 6px;
   box-shadow: 0px 0px 20px #acacac;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
 }
 .fl-data {
   font-size: 10px;
   font-family: monospace;
 }
+.fl-content {
+  overflow: auto;
+  flex-grow : 1;    
+}    
