@@ -101,12 +101,8 @@ class FinishLine(object):
             return json.dumps(new_config)
                 
         # client side data objects
-        c_data_style = {'display':'block'} if self.debug else {'display':'none'}
-        
-        if self.debug_path is not None:
-            c_data = self.store.debug_layout(self.client_data)
-        else:
-            c_data = self.store.layout
+        c_data_style = {'display':'block'} if self.debug_path else {'display':'none'}
+        c_data = self.store.debug_layout(self.client_data)
                 
         # client side visualization objects
         c_vis = self._gen_c_vis(components, layouts)
