@@ -41,7 +41,6 @@ def Layout(children=None, layouts=None, cols=None, rowHeight=300, **kwargs):
 def Card(children, title='Undefined', i=0, href=None, **kwargs):
     
     t = html.A(title, href=href, target=title) if href is not None else title
-    print('card children', children)
     if isinstance(children, dcc.Graph):
         # note: don't put children in a div container wrapper, else plotly won't resize properly
         c = [html.Div(t, className='fl-titlebar')] + [children]
