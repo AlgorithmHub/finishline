@@ -18,14 +18,13 @@ fl = FinishLine(app=app,
 fl.load_plugins()
 app.layout = fl.generate_layout(layouts={
     'lg':[
-      {'i': 'HelloWorld',         'x': 0, 'y': 0, 'w': 2, 'h': 2},
-      {'i': 'InputForm',          'x': 2, 'y': 0, 'w': 1, 'h': 1},
-      {'i': 'OutputForm',         'x': 2, 'y': 1, 'w': 1, 'h': 1},
-      {'i': 'plugins/ErrorBlock', 'x': 0, 'y': 2, 'w': 2, 'h': 1},
-      {'i': 'Test Layout',        'x': 2, 'y': 2, 'w': 1, 'h': 1},
+        {"w": 2, "h": 1, "x": 1, "y": 2, "i": "plugins/ErrorBlock"}, 
+        {"w": 2, "h": 2, "x": 0, "y": 0, "i": "HelloWorld"}, 
+        {"w": 1, "h": 1, "x": 2, "y": 0, "i": "InputForm"}, 
+        {"w": 1, "h": 1, "x": 2, "y": 1, "i": "OutputForm"}, 
+        {"w": 1, "h": 1, "x": 0, "y": 2, "i": "Test Layout"}
     ],
-    'md':[],
-    'sm':[]
+
 })
 
 if __name__ == '__main__':
