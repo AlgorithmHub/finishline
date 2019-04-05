@@ -25,7 +25,7 @@ def Page(children=None, **kwargs):
 def Layout(children=None, layouts=None, cols=None, rowHeight=300, **kwargs):
     
     layouts = layouts or {'lg':[], 'md':[], 'sm':[] }
-    cols = cols or { 'lg': 3, 'md': 2, 'sm': 1 };
+    cols = cols or { 'lg': 3, 'md': 2, 'sm': 1 }
     
     return dgl.ResponsiveGridLayout(
         children,
@@ -53,6 +53,7 @@ def Card(children, title='Undefined', i=0, href=None, **kwargs):
         c,
         className='fl-card',
         key=str(i),
+        id=str(i),
         style=merge({}, kwargs.get('style', {})),
         **omit(['style'], kwargs)
     )
