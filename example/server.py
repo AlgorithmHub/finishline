@@ -18,11 +18,11 @@ fl = FinishLine(app=app,
 fl.load_plugins()
 app.layout = fl.generate_layout(layouts={
     'lg':[
-        {"w": 2, "h": 1, "x": 1, "y": 2, "i": "plugins/ErrorBlock"}, 
-        {"w": 2, "h": 2, "x": 0, "y": 0, "i": "HelloWorld"}, 
-        {"w": 1, "h": 1, "x": 2, "y": 0, "i": "InputForm"}, 
-        {"w": 1, "h": 1, "x": 2, "y": 1, "i": "OutputForm"}, 
-        {"w": 1, "h": 1, "x": 0, "y": 2, "i": "Test Layout"}
+        {"w": 2, "h": 1, "x": 1, "y": 2, "i": ".$plugins/ErrorBlock"}, 
+        {"w": 2, "h": 2, "x": 0, "y": 0, "i": ".$HelloWorld"}, 
+        {"w": 1, "h": 1, "x": 2, "y": 0, "i": ".$InputForm"}, 
+        {"w": 1, "h": 1, "x": 2, "y": 1, "i": ".$OutputForm"}, 
+        {"w": 1, "h": 1, "x": 0, "y": 2, "i": ".$Test Layout"}
     ],
 
 })
