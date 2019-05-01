@@ -6,7 +6,7 @@ def readme():
 
 configuration = {
     'name' : 'finishline',
-    'version': '0.2.0',
+    'version': '0.3.0',
     'description' : 'Framework for Building Beautiful and Functional Dashbords',
     'long_description' : readme(),
     'classifiers' : [
@@ -29,8 +29,8 @@ configuration = {
     'maintainer_email' : 'alex.cabello@algorithmhub.com',
     'license' : 'MIT',
     'packages' : ['finishline'],
-    'install_requires': ['dash >= 0.40.0',
-                         'dash-responsive-grid-layout >= 0.2.0',
+    'install_requires': ['dash >= 0.42.0',
+                         'dash-responsive-grid-layout >= 0.3.0',
                          'dash-building-blocks >= 0.1.2'],
     'ext_modules' : [],
     'cmdclass' : {},
